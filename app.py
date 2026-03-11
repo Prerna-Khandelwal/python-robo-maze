@@ -5,106 +5,83 @@ import random
 # 1. Page Configuration
 st.set_page_config(page_title="Robo-Escape", layout="centered")
 
-# 2. Stable Maze Layout
+# 2. Compact Maze Layout (8x8 for better mobile fit)
 MAZE = [
-    "XXXXXXXXXX",
-    "XP       X", 
-    "X  XXXX  X",
-    "X    X   X",
-    "X  X   X X",
-    "X  XXXXX X",
-    "X        X",
-    "XXXXXXXXXX"
+    "XXXXXXXX",
+    "XP     X", 
+    "X  XXX  X",
+    "X    X  X",
+    "X  X    X",
+    "X  XXXX X",
+    "X       X",
+    "XXXXXXXX"
 ]
 
-# 3. Game State Initialization
+# 3. Game State
 if 'r' not in st.session_state:
     st.session_state.r, st.session_state.c = 1, 1
 if 'moves' not in st.session_state:
     st.session_state.moves = 0
 
-# FIXED: Find target only ONCE and store it
 if 'target_r' not in st.session_state:
-    possible_targets = []
-    for r, row in enumerate(MAZE):
-        for c, char in enumerate(row):
-            if char == " " and (r != 1 or c != 1):
-                possible_targets.append((r, c))
-    t_r, t_c = random.choice(possible_targets)
-    st.session_state.target_r = t_r
-    st.session_state.target_c = t_c
+    possible = [(r, c) for r, row in enumerate(MAZE) for c, char in enumerate(row) if char == " " and (r,c) != (1,1)]
+    st.session_state.target_r, st.session_state.target_c = random.choice(possible)
 
-# 4. Movement Logic
 def move_player(dr, dc):
-    new_r = st.session_state.r + dr
-    new_c = st.session_state.c + dc
-    
-    if MAZE[new_r][new_c] == "X":
+    nr, nc = st.session_state.r + dr, st.session_state.c + dc
+    if MAZE[nr][nc] == "X":
         st.session_state.r, st.session_state.c = 1, 1 
-        st.toast("🚫 Hit a wall! Resetting...", icon="⚠️")
+        st.toast("🚫 Reset!", icon="⚠️")
     else:
-        st.session_state.r, st.session_state.c = new_r, new_c
+        st.session_state.r, st.session_state.c = nr, nc
         st.session_state.moves += 1
-        if new_r == st.session_state.target_r and new_c == st.session_state.target_c:
+        if (nr, nc) == (st.session_state.target_r, st.session_state.target_c):
             st.balloons()
 
-# 5. Professional Styling
+# 4. Ultra-Compact Styling
 st.markdown("""
     <style>
+    .main .block-container { padding-top: 1rem; padding-bottom: 0rem; }
     .maze-container {
-        font-size: 28px !important;
+        font-size: 24px !important;
         font-family: monospace;
-        line-height: 1.1;
-        letter-spacing: 2px;
+        line-height: 1.0;
         text-align: center;
         background-color: #f0f2f6;
-        padding: 20px;
-        border-radius: 15px;
+        padding: 10px;
+        border-radius: 10px;
         white-space: pre;
     }
-    .stButton button { width: 100%; height: 55px; font-size: 22px !important; }
+    div[data-testid="stHorizontalBlock"] { gap: 0.5rem; }
+    button { padding: 0px !important; height: 45px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚡ ROBO-ESCAPE ⚡")
+# 5. Buttons in ONE LINE
 st.write(f"**Moves: {st.session_state.moves}**")
+cols = st.columns(4) # 4 columns for 4 buttons
+with cols[0]: st.button("◀", on_click=move_player, args=(0, -1), use_container_width=True)
+with cols[1]: st.button("▲", on_click=move_player, args=(-1, 0), use_container_width=True)
+with cols[2]: st.button("▼", on_click=move_player, args=(1, 0), use_container_width=True)
+with cols[3]: st.button("▶", on_click=move_player, args=(0, 1), use_container_width=True)
 
-# 6. Controls
-col1, col2, col3 = st.columns([1,1,1])
-with col2: st.button("▲", on_click=move_player, args=(-1, 0))
-c1, c2, c3 = st.columns([1,1,1])
-with c1: st.button("◀", on_click=move_player, args=(0, -1))
-with c2: st.button("▼", on_click=move_player, args=(1, 0))
-with c3: st.button("▶", on_click=move_player, args=(0, 1))
-
-# 7. Render Maze (FIXED GRID LOGIC)
+# 6. Render Maze
 grid_html = ""
-for r_idx, row in enumerate(MAZE):
-    for c_idx, char in enumerate(row):
-        if r_idx == st.session_state.r and c_idx == st.session_state.c:
-            grid_html += "🤖"
-        elif r_idx == st.session_state.target_r and c_idx == st.session_state.target_c:
-            grid_html += "🟡"
-        elif char == "X":
-            grid_html += "🟦"
-        else:
-            grid_html += "⬜"
+for r, row in enumerate(MAZE):
+    for c, char in enumerate(row):
+        if (r, c) == (st.session_state.r, st.session_state.c): grid_html += "🤖"
+        elif (r, c) == (st.session_state.target_r, st.session_state.target_c): grid_html += "🟡"
+        elif char == "X": grid_html += "🟦"
+        else: grid_html += "⬜"
     grid_html += "\n"
 
 st.markdown(f'<div class="maze-container">{grid_html}</div>', unsafe_allow_html=True)
 
-# 8. Win Message & Reset
-if st.session_state.r == st.session_state.target_r and st.session_state.c == st.session_state.target_c:
-    st.success("🏆 TARGET REACHED!")
-    
-    msg = f"I beat the random maze in {st.session_state.moves} moves!"
-    url = f"https://wa.me/918949803950?text={urllib.parse.quote(msg)}"
-    st.link_button("🟢 Learn Python with Prerna Khandelwal. Click to connect on WhatsApp", url, use_container_width=True)
-    
-    if st.button("🔄 Play Again (New Target)"):
-        # Clear specific session keys to force re-generation
-        del st.session_state.target_r
-        del st.session_state.target_c
-        st.session_state.r, st.session_state.c = 1, 1
-        st.session_state.moves = 0
+# 7. Win Section
+if (st.session_state.r, st.session_state.c) == (st.session_state.target_r, st.session_state.target_c):
+    msg = urllib.parse.quote(f"I beat the Robo-Maze in {st.session_state.moves} moves!")
+    st.link_button("🟢 Chat on WhatsApp", f"https://wa.me/918949803950?text={msg}", use_container_width=True)
+    if st.button("🔄 New Game", use_container_width=True):
+        for key in ['target_r', 'target_c']: del st.session_state[key]
+        st.session_state.r, st.session_state.c, st.session_state.moves = 1, 1, 0
         st.rerun()
