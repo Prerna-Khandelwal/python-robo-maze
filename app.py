@@ -5,7 +5,7 @@ import random
 # 1. Page Configuration
 st.set_page_config(page_title="Robo-Escape", layout="centered")
 
-# 2. Compact Maze Layout (8x8 for better mobile fit)
+# 2. Compact Maze Layout
 MAZE = [
     "XXXXXXXX",
     "XP     X", 
@@ -38,7 +38,7 @@ def move_player(dr, dc):
         if (nr, nc) == (st.session_state.target_r, st.session_state.target_c):
             st.balloons()
 
-# 4. Ultra-Compact Styling
+# 4. Ultra-Compact Styling for One-Page Fit
 st.markdown("""
     <style>
     .main .block-container { padding-top: 1rem; padding-bottom: 0rem; }
@@ -52,14 +52,14 @@ st.markdown("""
         border-radius: 10px;
         white-space: pre;
     }
-    div[data-testid="stHorizontalBlock"] { gap: 0.5rem; }
+    div[data-testid="stHorizontalBlock"] { gap: 0.2rem; }
     button { padding: 0px !important; height: 45px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 5. Buttons in ONE LINE
+# 5. Buttons in ONE LINE (Top)
 st.write(f"**Moves: {st.session_state.moves}**")
-cols = st.columns(4) # 4 columns for 4 buttons
+cols = st.columns(4) 
 with cols[0]: st.button("◀", on_click=move_player, args=(0, -1), use_container_width=True)
 with cols[1]: st.button("▲", on_click=move_player, args=(-1, 0), use_container_width=True)
 with cols[2]: st.button("▼", on_click=move_player, args=(1, 0), use_container_width=True)
@@ -77,7 +77,7 @@ for r, row in enumerate(MAZE):
 
 st.markdown(f'<div class="maze-container">{grid_html}</div>', unsafe_allow_html=True)
 
-# 7. Win Section
+# 7. Winning Message & Expertise
 if (st.session_state.r, st.session_state.c) == (st.session_state.target_r, st.session_state.target_c):
     st.markdown(f"""
         <div style="background-color:#00ffcc; padding:15px; border-radius:10px; text-align:center; border: 2px solid #1a1a40; margin-top: 10px;">
