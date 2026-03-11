@@ -79,9 +79,19 @@ st.markdown(f'<div class="maze-container">{grid_html}</div>', unsafe_allow_html=
 
 # 7. Win Section
 if (st.session_state.r, st.session_state.c) == (st.session_state.target_r, st.session_state.target_c):
-    msg = urllib.parse.quote(f"I beat the Robo-Maze in {st.session_state.moves} moves!")
-    st.link_button("🟢 Chat on WhatsApp", f"https://wa.me/918949803950?text={msg}", use_container_width=True)
-    if st.button("🔄 New Game", use_container_width=True):
+    st.markdown(f"""
+        <div style="background-color:#00ffcc; padding:15px; border-radius:10px; text-align:center; border: 2px solid #1a1a40; margin-top: 10px;">
+            <h3 style="color:#1a1a40; margin:0;">🏆 MISSION COMPLETE! 🏆</h3>
+            <p style="color:#1a1a40; font-size:14px; margin:5px 0;">Want to learn to code games like this?</p>
+            <h4 style="color:#ff0066; margin:0;">Join Prerna Khandelwal's Classes</h4>
+            <p style="color:#333; font-weight:bold; font-size:12px;">Python • Scratch • JavaScript</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    msg = urllib.parse.quote(f"I beat the Robo-Maze in {st.session_state.moves} moves! I'd like to join your coding class.")
+    st.link_button("🟢 Click to Connect on WhatsApp", f"https://wa.me/918949803950?text={msg}", use_container_width=True)
+    
+    if st.button("🔄 Play Again", use_container_width=True):
         for key in ['target_r', 'target_c']: del st.session_state[key]
         st.session_state.r, st.session_state.c, st.session_state.moves = 1, 1, 0
         st.rerun()
