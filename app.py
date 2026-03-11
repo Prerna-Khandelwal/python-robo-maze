@@ -5,7 +5,7 @@ import random
 # 1. Page Configuration
 st.set_page_config(page_title="Robo-Escape", layout="centered")
 
-# 2. DEFINITIVE MAZE DATA (Logic and Visuals use this exact map)
+# 2. Definitive Maze Data (Logic and Visuals)
 MAZE = [
     "XXXXXXXX",
     "XP     X", 
@@ -23,30 +23,36 @@ if 'r' not in st.session_state:
 if 'moves' not in st.session_state:
     st.session_state.moves = 0
 
-# Fixed Reachable Target Spots
+# SMART TARGET: Only chooses from guaranteed reachable spots
 if 'target_r' not in st.session_state:
-    open_spots = [(1,4),(1,5),(1,6),(3,1),(3,2),(3,3),(3,6),(4,3),(4,4),(4,5),(4,6),(6,1),(6,2),(6,3),(6,4),(6,5),(6,6)]
+    # These coordinates are all in the open white areas
+    open_spots = [
+        (1,4), (1,5), (1,6), 
+        (3,1), (3,2), (3,3), (3,6), 
+        (4,3), (4,4), (4,5), (4,6), 
+        (6,1), (6,2), (6,3), (6,4), (6,5), (6,6)
+    ]
     st.session_state.target_r, st.session_state.target_c = random.choice(open_spots)
 
-# 4. Movement Logic (The "Wall Guard")
+# 4. Movement Logic (The Wall Guard)
 def move_player(dr, dc):
     new_r = st.session_state.r + dr
     new_c = st.session_state.c + dc
     
-    # 1. Check if the move is within the grid boundaries
+    # Check boundaries
     if 0 <= new_r < len(MAZE) and 0 <= new_c < len(MAZE[0]):
-        # 2. ONLY if the spot is an 'X' do we show the wall message
+        # Check for wall
         if MAZE[new_r][new_c] == "X":
             st.toast("🚫 Wall!", icon="🧱")
         else:
-            # 3. Move only into empty spaces ' ' or 'P'
+            # Valid move
             st.session_state.r = new_r
             st.session_state.c = new_c
             st.session_state.moves += 1
             if (new_r, new_c) == (st.session_state.target_r, st.session_state.target_c):
                 st.balloons()
 
-# 5. Professional CSS Grid Alignment
+# 5. Fixed CSS for Perfect Grid Alignment
 st.markdown("""
     <style>
     .main .block-container { padding-top: 1.5rem; }
@@ -77,13 +83,13 @@ st.title("⚡ ROBO-ESCAPE ⚡")
 st.write(f"**Moves: {st.session_state.moves}**")
 
 # Control Buttons
-cols = st.columns(4) 
+cols = st.columns(4)
 with cols[0]: st.button("◀", on_click=move_player, args=(0, -1), use_container_width=True)
 with cols[1]: st.button("▲", on_click=move_player, args=(-1, 0), use_container_width=True)
 with cols[2]: st.button("▼", on_click=move_player, args=(1, 0), use_container_width=True)
 with cols[3]: st.button("▶", on_click=move_player, args=(0, 1), use_container_width=True)
 
-# 7. Render The Grid
+# 7. Render Aligned Grid
 grid_html = '<div class="maze-wrapper">'
 for r, row in enumerate(MAZE):
     for c, char in enumerate(row):
@@ -97,7 +103,7 @@ grid_html += '</div>'
 
 st.markdown(grid_html, unsafe_allow_html=True)
 
-# 8. Success Message
+# 8. Success Branding
 if (st.session_state.r, st.session_state.c) == (st.session_state.target_r, st.session_state.target_c):
     st.markdown(f"""
         <div style="background-color:#00ffcc; padding:15px; border-radius:10px; text-align:center; border: 2px solid #1a1a40; margin-top: 15px;">
