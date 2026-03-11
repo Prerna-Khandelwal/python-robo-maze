@@ -99,7 +99,7 @@ if st.session_state.r == st.session_state.target_r and st.session_state.c == st.
     
     msg = f"I beat the random maze in {st.session_state.moves} moves!"
     url = f"https://wa.me/918949803950?text={urllib.parse.quote(msg)}"
-    st.link_button("🟢 Learn Python with Prerna Khandelwal on WhatsApp", url, use_container_width=True)
+    st.link_button("🟢 Learn Python with Prerna Khandelwal. Click to connect on WhatsApp", url, use_container_width=True)
     
     if st.button("🔄 Play Again (New Target)"):
         # Clear specific session keys to force re-generation
