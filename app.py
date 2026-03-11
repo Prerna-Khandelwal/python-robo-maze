@@ -1,61 +1,100 @@
 import streamlit as st
+import urllib.parse
 
+# 1. Page Configuration
 st.set_page_config(page_title="Robo-Escape", layout="centered")
 
-# 1. The Maze Layout
+# 2. Mobile-Friendly Maze Layout (10 columns wide)
 MAZE = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XP      XXXXX           X",
-    "X  XXX  XXXXX  XXXXXXX  X",
-    "X  XXX         X     X  X",
-    "X  XXXXXXXXXX  X  X  X  X",
-    "X  X           X  X  X  X",
-    "X  X  XXXXXXX  XXXX  X  X",
-    "X     X        X        X",
-    "X  XXXX  XXXXXXX  XXXX  X",
-    "X        X           XEX ",
-    "XXXXXXXXXXXXXXXXXXXXXXXXX"
+    "XXXXXXXXXX",
+    "XP      EX", # P = Player Start, E = Exit (Gold Circle)
+    "X  XXXX  X",
+    "X    X   X",
+    "X  X   X X",
+    "X  XXXXX X",
+    "X        X",
+    "XXXXXXXXXX"
 ]
 
-# 2. Game State (Position)
+# 3. Game State Management
 if 'r' not in st.session_state:
     st.session_state.r, st.session_state.c = 1, 1
+if 'moves' not in st.session_state:
+    st.session_state.moves = 0
 
 def move(dr, dc):
     nr, nc = st.session_state.r + dr, st.session_state.c + dc
+    
+    # Wall Collision Logic
     if MAZE[nr][nc] == "X":
         st.session_state.r, st.session_state.c = 1, 1 # Reset to start
-        st.toast("🚫 Hit a wall! Back to the start!", icon="⚠️")
+        st.toast("🚫 Oops! You hit a wall. Back to the start!", icon="⚠️")
     else:
         st.session_state.r, st.session_state.c = nr, nc
+        st.session_state.moves += 1
+        # Check for Win
         if MAZE[nr][nc] == "E":
-            st.balloons() # Fun winning effect!
+            st.balloons() 
 
-# 3. UI Elements
-st.title("⚡ ROBO-ESCAPE CHALLENGE ⚡")
-st.write("Rules: Use buttons to reach the Gold Circle. Don't hit walls!")
+# 4. Custom CSS for Mobile Styling
+st.markdown("""
+    <style>
+    .maze-text {
+        font-size: 32px !important;
+        font-family: 'Courier New', Courier, monospace;
+        line-height: 1.1;
+        text-align: center;
+        background-color: #f0f2f6;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    .stButton button {
+        width: 100%;
+        height: 50px;
+        font-size: 20px !important;
+    }
+    </style>
+    """, unsafe_allow_index=True)
 
-# Controller Buttons
+# 5. User Interface
+st.title("⚡ ROBO-ESCAPE ⚡")
+st.write(f"**Moves: {st.session_state.moves}**")
+
+# Movement Controls (Grid layout for thumb-friendly buttons)
 col1, col2, col3 = st.columns([1,1,1])
 with col2: st.button("↑", on_click=move, args=(-1, 0))
-col_a, col_b, col_c = st.columns([1,1,1])
-with col_a: st.button("←", on_click=move, args=(0, -1))
-with col_b: st.button("↓", on_click=move, args=(1, 0))
-with col_c: st.button("→", on_click=move, args=(0, 1))
+c_a, c_b, c_c = st.columns([1,1,1])
+with c_a: st.button("←", on_click=move, args=(0, -1))
+with c_b: st.button("↓", on_click=move, args=(1, 0))
+with c_c: st.button("→", on_click=move, args=(0, 1))
 
-# 4. Display the Game
-# (This builds the visual maze automatically)
-display = ""
+# 6. Drawing the Maze
+display_grid = ""
 for r, row in enumerate(MAZE):
     for c, char in enumerate(row):
         if r == st.session_state.r and c == st.session_state.c:
-            display += "🤖"
-        elif char == "X": display += "🟦"
-        elif char == "E": display += "🟡"
-        else: display += "⬜"
-    display += "\n"
+            display_grid += "🤖"
+        elif char == "X": display_grid += "🟦"
+        elif char == "E": display_grid += "🟡"
+        else: display_grid += "⬜"
+    display_grid += "\n"
 
-st.text(display)
+st.markdown(f'<p class="maze-text">{display_grid}</p>', unsafe_allow_index=True)
 
+# 7. Attractive Winning Message & WhatsApp Button
 if MAZE[st.session_state.r][st.session_state.c] == "E":
-    st.success("MISSION COMPLETE! Join Prerna's Python Classes!")
+    st.markdown("""
+        <div style="background-color:#00ffcc; padding:20px; border-radius:15px; text-align:center; border: 2px solid #1a1a40;">
+            <h1 style="color:#1a1a40; margin:0;">🏆 YOU WON! 🏆</h1>
+            <p style="color:#1a1a40; font-size:18px;">Your child has the logic of a future coder!</p>
+            <h3 style="color:#ff0066;">Prerna Khandelwal's Academy</h3>
+        </div>
+    """, unsafe_allow_index=True)
+    
+    # Create WhatsApp Link
+    msg = f"I just beat the Robo-Maze in {st.session_state.moves} moves! I want to book a free Python trial session."
+    encoded_msg = urllib.parse.quote(msg)
+    whatsapp_url = f"https://wa.me/918949803950?text={encoded_msg}"
+    
+    st.write("") # Spacer
+    st.link_button("🟢 Claim Your Free Trial on WhatsApp", whatsapp_url, use_container_width=True)
